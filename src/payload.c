@@ -1,1 +1,3 @@
-int main() { write(1, "test\n", 5); }
+int main() { 
+  write(1, "W\n", 5);
+}

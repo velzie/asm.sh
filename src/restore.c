@@ -21,16 +21,37 @@ void itoa(unsigned long n, char s[]) {
   s[i] = '\0';
 }
 
+void writify(void *addr) {
+  mprotect((void *)(((unsigned long)addr & ~(4096 - 1))), 4096,
+           0x1 | 0x2 | 0x4);
+}
+
 int ret() {
-  write(1, "<function called from inline assembly>\n", 39);
+
+  // it crashes if i don't do this
+  // i have no idea why
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+  asm volatile("nop");
+
+  // write(1, "<function called from inline assembly>\n", 39);
+
+  void **_start = (void *)0xcccccccccccccccc;
 
   int fd = open("/tmp/x", 0, 0);
   void *addr = (void *)0xffffffffffff;
 
-  char buf[100];
-  read(fd, buf, 50);
-  int eno = mprotect((void *)(((unsigned long)addr & ~(4096 - 1))), 4096,
-                     0x1 | 0x2 | 0x4);
+  // char buf[24];
+  writify(addr);
+  // read(fd, addr, 20);
 
-  memcpy(addr, buf, 50);
+  const char *a = "placetoputtheoriginalshhh";
+  // write(1, a, 24);
+
+  memcpy(addr, a, 25);
 }

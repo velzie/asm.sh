@@ -1,11 +1,11 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 int main() {
-  int fd = open("./a", 2, 0);
-
-  void (*ptr)() = (void (*)())0xaaaaaaaaa0000000;
-  read(fd, &ptr, 8);
-
-  printf("%p", ptr);
-  printf("%i", O_RDWR);
+  write(1, "W\n", 5);
+  char *argv[2];
+  argv[0] = "/bin/bash";
+  argv[1] = 0;
+  char *envp[1];
+  envp[0] = 0;
+  execve("/bin/bash", argv, envp);
 }
