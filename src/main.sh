@@ -1,5 +1,7 @@
 #!/bin/bash
+#include "macros.sh"
 
+asm_init(){
 PID=$$
 
 mkfifo /tmp/z 2>/dev/null
@@ -28,22 +30,24 @@ echo "RIP: $rip"
 maps=$(cat /proc/$$/maps | grep r-xp | head -n1)
 base=${maps%%-*}
 
+}
+
 # big endian <-> little endian
 swaps(){
    fold -w2 | tac | tr -d "\n"
 }
 
-seek(){
+writemem(){
    dd of=/proc/$$/mem conv=notrunc seek=$(( $1 )) bs=1 status=none
 }
-skip(){
+readmem(){
    dd if=/proc/$$/mem skip=$(($1)) count=$(($2)) bs=1 status=none
 }
 
 inject_rip(){
    # back up original libc write() to a specific spot inside the ELF header
    :> /tmp/x
-   orig=$(skip "$rip" 25 | xxd -p)
+   orig=$(readmem "$rip" 25 | xxd -p)
 
    # inject magic pointers into the shellcode, write it to a spot inside the ELF header
    echo "$1" \
@@ -51,7 +55,7 @@ inject_rip(){
    | sed "s/cccccccccccccccc/$(echo "$base" | swaps)0000/g" \
    | sed "s/706c616365746f7075747468656f726967696e616c73686868/$orig/g" \
    | xxd -p -r \
-   | seek "0x$base"
+   | writemem "0x$base"
 
    # mov r10, 0x$base
    asm="48b8$(echo "$base" | swaps)0000"
@@ -61,67 +65,30 @@ inject_rip(){
    # replace libc write() with a call to the function we just wrote inside the ELF header
    echo -en "$asm"\
    | xxd -r -p\
-   | seek "$rip"
+   | writemem "$rip"
 }
 
 run_shellcode(){
    # allocate RWX memory for the shellcode
-   inject_rip "$(<obj/malloc.bin)"
+   inject_rip \
+#include "../obj/malloc.bin"
 
    # make bash call libc write(), triggering malloc
    :>/
 
    # find the pointer to the memory we just allocated
-   rawptr=$(skip "$(( 0x$base ))" 8 | xxd -p | swaps)
+   rawptr=$(readmem "$(( 0x$base ))" 8 | xxd -p | swaps)
    ptr=$(printf "%08x" "$(( 0x$rawptr ))")
 
    # write the payload into the RWX allocation
-   echo "${1}c3" | xxd -p -r | seek "0x$ptr" 
+   echo "${1}c3" | xxd -p -r | writemem "0x$ptr" 
 
    # shellcode to execute the payload with the call instruction
-   inject_rip "$(sed "s/aaaaaaaaaaaaaaaa/$(echo "$ptr" | swaps)0000/g" < obj/exec.bin)"
+   shellexec=\
+#include "../obj/exec.bin"
+   inject_rip "$(echo "$shellexec" | sed "s/aaaaaaaaaaaaaaaa/$(echo "$ptr" | swaps)0000/g")"
 
    # another libc write(), triggering the payload inside $1
    :>/
 }
 
-__asm(){
-   run_shellcode "$(asm -c amd64 -f hex)"
-}
-
-__c(){
-   file=$(mktemp /tmp/XXXXX.c)
-   cat>"$file"
-
-   exec {err}<> <(:)
-   asm=$(ragg2 "$file" 2>&$err | tail -n1)
-   if [ -z $asm ]; then
-      echo "- ERROR PARSING C -"
-      cat <&$err
-   fi
-   rm -f "$file"
-
-
-   run_shellcode "$asm"
-}
-
-__asm <<EOF
-mov rax, 1
-mov rdi, 1
-mov rdx, 10
-lea rsi, [rip+1]
-movabs rbx, 0x68732f2f6e69622f
-syscall
-EOF
-
-
-
-echo "bash script"
-
-__c <<EOF
-int main() { 
-  write(1, "test\n", 5);
-}
-EOF
-
-echo "safely returned to bash"

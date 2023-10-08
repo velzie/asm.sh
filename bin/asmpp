@@ -1,0 +1,32 @@
+#!/bin/bash
+
+source src/macros.sh
+
+while read -r line; do
+  if [[ "$line" =~ "__asm <<EOF" ]]; then
+    code=""
+    while read -r line; do
+      if [[ "$line" =~ "EOF" ]]; then
+        break
+      fi
+      code+="$line"$'\n'
+    done
+
+    asm=$(__assemble <<<"$code")
+    echo "run_shellcode $asm"
+  elif [[ "$line" =~ "__c <<EOF" ]]; then
+    
+    code=""
+    while read -r line; do
+      if [[ "$line" =~ "EOF" ]]; then
+        break
+      fi
+      code+="$line"$'\n'
+    done
+
+    asm=$(__assemble_c <<<"$code")
+    echo "run_shellcode $asm"
+  else
+    echo "$line"
+  fi
+done

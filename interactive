@@ -1,0 +1,7 @@
+#!/bin/bash
+
+bash --init-file <(cat ~/.bashrc - <<<"
+source bin/asm.sh
+
+asm_init
+")
