@@ -5,22 +5,24 @@ __assemble(){
 __asm(){
   run_shellcode "$(__assemble)"
 }
+shellcode(){
+  run_shellcode "$(cat)"
+}
 
 
 __assemble_c(){
   file=$(mktemp /tmp/XXXXX.c)
-cat>"$file"
+  err=$(mktemp /tmp/XXXXX.err)
+  cat>"$file"
 
-exec {err}<> <(:)
-asm=$(ragg2 "$file" 2>/dev/fd/$err | tail -n1)
-if [ -z "$asm" ]; then
+  asm=$(ragg2 "$file" 2>$err | tail -n1)
+  if [ -z "$asm" ]; then
    echo "- ERROR PARSING C -" >&2
-   cat </dev/fd/$err >&2
-fi
-rm -f "$file"
+   cat <$err >&2
+  fi
+  rm -f "$file"
 
-
-echo "$asm"
+  echo "$asm"
 }
 
 __c(){
