@@ -76,7 +76,7 @@ run_shellcode(){
    ptr=$(printf "%08x" "$(( 0x$rawptr ))")
 
    # write the payload into the RWX allocation
-   echo "$1" | xxd -p -r | seek "0x$ptr" 
+   echo "${1}c3" | xxd -p -r | seek "0x$ptr" 
 
    # shellcode to execute the payload with the call instruction
    inject_rip "$(sed "s/aaaaaaaaaaaaaaaa/$(echo "$ptr" | swaps)0000/g" < obj/exec.bin)"
@@ -85,6 +85,43 @@ run_shellcode(){
    :>/
 }
 
+__asm(){
+   run_shellcode "$(asm -c amd64 -f hex)"
+}
 
-run_shellcode "$(<obj/payload.bin)"
+__c(){
+   file=$(mktemp /tmp/XXXXX.c)
+   cat>"$file"
+
+   exec {err}<> <(:)
+   asm=$(ragg2 "$file" 2>&$err | tail -n1)
+   if [ -z $asm ]; then
+      echo "- ERROR PARSING C -"
+      cat <&$err
+   fi
+   rm -f "$file"
+
+
+   run_shellcode "$asm"
+}
+
+__asm <<EOF
+mov rax, 1
+mov rdi, 1
+mov rdx, 10
+lea rsi, [rip+1]
+movabs rbx, 0x68732f2f6e69622f
+syscall
+EOF
+
+
+
+echo "bash script"
+
+__c <<EOF
+int main() { 
+  write(1, "test\n", 5);
+}
+EOF
+
 echo "safely returned to bash"
