@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source src/macros.sh
+source asm.sh
 
 while read -r line; do
   if [[ "$line" =~ "__asm <<EOF" ]]; then

@@ -3,7 +3,7 @@ run(){
   source bin/asm.sh
   asm_init
 
-__asm <<EOF
+  __asm <<EOF
 mov rax, 1
 mov rdi, 1
 mov rdx, 8

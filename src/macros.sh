@@ -13,7 +13,11 @@ shellcode(){
 __assemble_c(){
   file=$(mktemp /tmp/XXXXX.c)
   err=$(mktemp /tmp/XXXXX.err)
-  cat>"$file"
+  
+  cat <<EOF >"$file"
+#include "page.c"
+EOF
+  cat>>"$file"
 
   asm=$(ragg2 "$file" 2>$err | tail -n1)
   if [ -z "$asm" ]; then
@@ -21,10 +25,23 @@ __assemble_c(){
    cat <$err >&2
   fi
   rm -f "$file"
-
   echo "$asm"
 }
 
+__run_c(){
+  asm=$1
+  if [ -n "$__last_page" ]; then
+    hex=$(printf "%08x" "$__last_page" | swaps)
+    asm=${asm//bbbbbbbbbbbbbbbb/${hex}0000}
+  fi
+
+  run_shellcode "$asm"
+
+  if [ -n "$__last_page" ]; then
+    page=$(readmem "$__last_page" "$__last_page_size" | xxd -p)
+  fi
+}
+
 __c(){
-  run_shellcode "$(__assemble_c)"
+  __run_c "$(__assemble_c)"
 }

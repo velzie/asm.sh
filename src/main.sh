@@ -78,26 +78,47 @@ inject_rip() {
       writemem "$rip"
 }
 
-run_shellcode() {
-   # allocate RWX memory for the shellcode
-   inject_rip \
+_malloc(){
+   size=$(printf "%08x" "$1")
+   asm=\
 #include "../obj/malloc.bin"
+   asm=${asm//aaaaaaaa/$size}
+   inject_rip "$asm"
 
    # make bash call libc write(), triggering malloc
-   : >/
+   :>/
 
    # find the pointer to the memory we just allocated
    rawptr=$(readmem "$((0x$base))" 8 | xxd -p | swaps)
-   ptr=$(printf "%08x" "$((0x$rawptr))")
+   ptr=$((0x$rawptr))
+}
+malloc(){
+   _malloc "$1" <<<""
+}
+
+mkpage(){
+   malloc "$1"
+   __last_page=$ptr
+   __last_page_size=$1
+}
+
+_run_shellcode() {
+   # allocate RWX memory for the shellcode
+   malloc "$(( ${#1} / 2 ))"
+   hexptr=$(printf "%08x" "$ptr")
 
    # write the payload into the RWX allocation
-   echo "${1}c3" | xxd -p -r | writemem "0x$ptr"
+   echo "${1}c3" | xxd -p -r | writemem "$ptr"
 
    # shellcode to execute the payload with the call instruction
    shellexec=\
 #include "../obj/exec.bin"
-   inject_rip "$(echo "$shellexec" | sed "s/aaaaaaaaaaaaaaaa/$(echo "$ptr" | swaps)0000/g")"
-
+   addr=$(echo "$hexptr" | swaps)0000
+   shellexec=${shellexec//aaaaaaaaaaaaaaaa/$addr}
+   inject_rip "$shellexec"
    # another libc write(), triggering the payload inside $1
-   : >/
+   :>/
+}
+run_shellcode(){
+   _run_shellcode "$1" <<<""
 }
