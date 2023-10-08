@@ -4,7 +4,9 @@
 asm_init() {
    PID=$$
 
-   mkfifo /tmp/z 2>/dev/null
+
+   pipe=$(mktemp -ut pipe.XXX)
+   mkfifo "$pipe"
    # fork off
    (
       # /proc/pid/syscall contains the registers of the process (note: the parent, not the child)
@@ -14,13 +16,14 @@ asm_init() {
       cat /proc/$PID/syscall >/tmp/regs
 
       # unhang parent
-      : </tmp/z
+      :<"$pipe"
    ) &
 
    # begin to write to FIFO. this will hang
-   : >/tmp/z
+   :>"$pipe"
 
    # after the return of the above line we can know the address of libc write()
+   rm -f "$pipe"
    regs=$(</tmp/regs)
    rip=${regs##* }
 
@@ -54,7 +57,6 @@ tohex(){
 
 inject_rip() {
    # back up original libc write() to a specific spot inside the ELF header
-   : >/tmp/x
    orig=$(readmem "$rip" 25 | tohex)
 
    # inject magic pointers into the shellcode, write it to a spot inside the ELF header

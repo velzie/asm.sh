@@ -28,30 +28,17 @@ void writify(void *addr) {
 
 int ret() {
 
-  // it crashes if i don't do this
-  // i have no idea why
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-  asm volatile("nop");
-
-  // write(1, "<function called from inline assembly>\n", 39);
-
   void **_start = (void *)0xcccccccccccccccc;
 
-  int fd = open("/tmp/x", 0, 0);
+  // it crashes if i don't do this
+  // i have no idea why
+  int fd = open("/", 0, 0);
+
   void *addr = (void *)0xffffffffffff;
 
-  // char buf[24];
   writify(addr);
-  // read(fd, addr, 20);
 
   const char *a = "placetoputtheoriginalshhh";
-  // write(1, a, 24);
 
   memcpy(addr, a, 25);
 }
