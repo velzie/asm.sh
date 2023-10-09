@@ -120,5 +120,5 @@ _run_shellcode() {
    :>/
 }
 run_shellcode(){
-   _run_shellcode "$1" <<<""
+   _run_shellcode "$1"
 }
