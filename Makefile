@@ -1,7 +1,7 @@
-bin/asm.sh: src/main.sh src/macros.sh obj/payload.bin obj/malloc.bin obj/exec.bin
+bin/asm.sh: src/main.sh src/macros.sh obj/payload.bin obj/malloc.bin obj/exec.bin obj/syscall.bin
 	bin/bashpp src/main.sh -o $@
 
-test: bin/asm.sh test/*.sh
+test: bin/asm.sh test/*.sh force
 	$(SHELL) test/test.sh
 
 install: bin/asm.sh bin/asmpp

@@ -1,4 +1,5 @@
 #include "restore.c"
+#include "sftypes/sftypes.h"
 
 int main() {
   void **_start = (void *)0xcccccccccccccccc;

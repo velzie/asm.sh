@@ -91,24 +91,24 @@ _malloc(){
    # find the pointer to the memory we just allocated
    rawptr=$(readmem "$((0x$base))" 8 | xxd -p | swaps)
    ptr=$((0x$rawptr))
+   # write the payload into the RWX allocation
+   echo "$2" | xxd -p -r | writemem "$ptr"
 }
 malloc(){
-   _malloc "$1" <<<""
+   _malloc "$1" "$2" <<<""
 }
 
 mkpage(){
-   malloc "$1"
+   malloc "$1" "$2"
+
    __last_page=$ptr
    __last_page_size=$1
 }
 
 _run_shellcode() {
    # allocate RWX memory for the shellcode
-   malloc "$(( ${#1} / 2 ))"
+   malloc "$(( ${#1} / 2 ))" "${1}c3" # (c3 is ret)
    hexptr=$(printf "%08x" "$ptr")
-
-   # write the payload into the RWX allocation
-   echo "${1}c3" | xxd -p -r | writemem "$ptr"
 
    # shellcode to execute the payload with the call instruction
    shellexec=\

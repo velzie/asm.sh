@@ -3,8 +3,8 @@
 source asm.sh
 
 while read -r line; do
+  code=""
   if [[ "$line" =~ "__asm <<EOF" ]]; then
-    code=""
     while read -r line; do
       if [[ "$line" =~ "EOF" ]]; then
         break
@@ -15,8 +15,6 @@ while read -r line; do
     asm=$(__assemble <<<"$code")
     echo "run_shellcode $asm"
   elif [[ "$line" =~ "__c <<EOF" ]]; then
-    
-    code=""
     while read -r line; do
       if [[ "$line" =~ "EOF" ]]; then
         break

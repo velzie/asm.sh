@@ -45,3 +45,14 @@ __run_c(){
 __c(){
   __run_c "$(__assemble_c)"
 }
+
+tolong(){
+  printf "%016x" "$1" | swaps
+}
+
+
+syscall(){
+  mkpage $(( 8 * 7 )) "$(tolong $1)$(tolong $2)$(tolong $3)$(tolong $4)$(tolong $5)$(tolong $6)$(tolong $7)"
+  __run_c \
+#include "../obj/syscall.bin"
+}
