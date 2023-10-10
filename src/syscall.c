@@ -1,5 +1,4 @@
 #include "page.c"
-#include "sftypes/sftypes.h"
 
 int main() {
   unsigned long *page = getpage();
