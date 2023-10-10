@@ -1,8 +1,8 @@
-bin/asm.sh: src/main.sh src/macros.sh obj/payload.bin obj/malloc.bin obj/exec.bin obj/syscall.bin
+bin/asm.sh: src/main.sh src/macros.sh obj/malloc.bin obj/exec.bin obj/syscall.bin
 	bin/bashpp src/main.sh -o $@
 
 test: bin/asm.sh test/*.sh force
-	$(SHELL) test/test.sh
+	$(_SHELL) test/test.sh
 
 install: bin/asm.sh bin/asmpp
 	sudo cp bin/asm.sh /usr/local/bin/asm.sh
@@ -11,6 +11,6 @@ install: bin/asm.sh bin/asmpp
 
 
 obj/%.bin: src/%.c src/restore.c
-	ragg2 $< -o shellcode | tail -n1 | cat > $@
+	ragg2 $< | tail -n1 | cat > $@
 
 force: 
