@@ -13,7 +13,7 @@ int ret() {
 
   // it crashes if i don't do this
   // i have no idea why
-  int fd = open("/", 0, 0);
+  // int fd = open("/", 0, 0);
 
   void *addr = (void *)0xffffffffffff;
 

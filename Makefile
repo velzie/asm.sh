@@ -1,4 +1,4 @@
-bin/asm.sh: src/main.sh obj/consts.sh src/macros.sh obj/malloc.bin obj/exec.bin obj/syscall.bin
+bin/asm.sh: src/main.sh src/macros.sh obj/malloc.bin obj/exec.bin obj/syscall.bin obj/consts.sh 
 	bin/bashpp src/main.sh -o $@
 
 obj/consts.sh:

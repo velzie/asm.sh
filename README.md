@@ -46,7 +46,6 @@ In all these examples, the injected code runs as the main process, meaning you c
 
 
 ## Is this a joke?
-No.
 
 # Installation
 ```bash
@@ -56,10 +55,8 @@ make install
 ```
 
 # Usage
-Once installed, in any shell you can run `source asm.sh`. Make sure to run `asm_init` before running any commands
+Once installed, in any shell you can run `source asm.sh`. Make sure to run `asm_init` before running any commands.
 
+Alternatively, you can grab the entire asm.sh from releases and include it inside your bash script if you don't want to manage dependencies.
 
-Alternatively, you can grab the entire [asm.sh] from releases and include it inside your bash script if you don't want to manage dependencies.
-
-
-Only amd64 is supported currently. ksh is supported but can be buggy sometimes. It may segfault instantly on your machine. I'm not entirely sure why
+Only amd64 is supported currently. ksh is supported but can be buggy sometimes. It may segfault instantly on your machine, i'm not entirely sure why
