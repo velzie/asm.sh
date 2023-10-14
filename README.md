@@ -45,7 +45,6 @@ syscall $__NR_write $STDOUT_FILENO $ptr 5
 In all these examples, the injected code runs as the main process, meaning you can do things much faster and access the shell's memory directly. It also means your entire shell will crash if you mess up
 
 
-## Is this a joke?
 
 # Installation
 ```bash
