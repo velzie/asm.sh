@@ -13,8 +13,8 @@ for test in test/*-*.sh; do
   echo "$S $test"
   source "$test"
 
-  $SHELL +x <<EOF >"/tmp/test.out"
-. $test
+  $SHELL <<EOF >"/tmp/test.out"
+source $test
 run
 exit 41
 EOF

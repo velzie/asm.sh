@@ -1,5 +1,6 @@
 #ifndef RET_H
 #define RET_H
+#include "/usr/include/libr/sflib/linux-x86-64/sflib.h"
 #include "lib.c"
 void writify(void *addr) {
   mprotect((void *)(((unsigned long)addr & ~(4096 - 1))), 4096,

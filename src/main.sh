@@ -1,7 +1,15 @@
 #!/bin/bash
 #include "macros.sh"
+#include "../obj/consts.sh"
 
 asm_init() {
+   
+   if [ "$(</proc/sys/kernel/yama/ptrace_scope)" != "0" ]; then
+      echo "Unable to access process memory. Cannot continue, exiting"
+      echo "Please run \`echo 0 > /proc/sys/kernel/yama/ptrace_scope\` as root"
+      exit
+   fi
+
    PID=$$
 
 
@@ -120,5 +128,5 @@ _run_shellcode() {
    :>/
 }
 run_shellcode(){
-   _run_shellcode "$1"
+   _run_shellcode "$1" <<<""
 }
